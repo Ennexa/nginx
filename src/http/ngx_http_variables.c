@@ -127,6 +127,8 @@ static ngx_int_t ngx_http_variable_hostname(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
 static ngx_int_t ngx_http_variable_pid(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
+static ngx_int_t ngx_http_variable_conn_start_msec(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data);
 static ngx_int_t ngx_http_variable_msec(ngx_http_request_t *r,
     ngx_http_variable_value_t *v, uintptr_t data);
 static ngx_int_t ngx_http_variable_time_iso8601(ngx_http_request_t *r,
@@ -320,6 +322,9 @@ static ngx_http_variable_t  ngx_http_core_variables[] = {
       0, 0, 0 },
 
     { ngx_string("pid"), NULL, ngx_http_variable_pid,
+      0, 0, 0 },
+
+    { ngx_string("conn_start_msec"), NULL, ngx_http_variable_conn_start_msec,
       0, 0, 0 },
 
     { ngx_string("msec"), NULL, ngx_http_variable_msec,
@@ -2149,6 +2154,29 @@ ngx_http_variable_pid(ngx_http_request_t *r,
     }
 
     v->len = ngx_sprintf(p, "%P", ngx_pid) - p;
+    v->valid = 1;
+    v->no_cacheable = 0;
+    v->not_found = 0;
+    v->data = p;
+
+    return NGX_OK;
+}
+
+static ngx_int_t
+ngx_http_variable_conn_start_msec(ngx_http_request_t *r,
+    ngx_http_variable_value_t *v, uintptr_t data)
+{
+    u_char   *p;
+    uint64_t start_usec;
+
+    p = ngx_pnalloc(r->pool, NGX_INT64_LEN);
+    if (p == NULL) {
+        return NGX_ERROR;
+    }
+
+    start_usec = (uint64_t) (r->http_connection->start_sec * 1000 * 1000 + r->http_connection->start_msec * 1000);
+
+    v->len = ngx_sprintf(p, "%L", start_usec) - p;
     v->valid = 1;
     v->no_cacheable = 0;
     v->not_found = 0;

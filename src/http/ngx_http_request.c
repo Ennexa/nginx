@@ -195,6 +195,7 @@ void
 ngx_http_init_connection(ngx_connection_t *c)
 {
     ngx_uint_t              i;
+    ngx_time_t             *tp;
     ngx_event_t            *rev;
     struct sockaddr_in     *sin;
     ngx_http_port_t        *port;
@@ -213,6 +214,11 @@ ngx_http_init_connection(ngx_connection_t *c)
     }
 
     c->data = hc;
+	
+    tp = ngx_timeofday();
+    hc->start_sec = tp->sec;
+    hc->start_msec = tp->msec;
+	
 
     /* find the server configuration for the address:port */
 
