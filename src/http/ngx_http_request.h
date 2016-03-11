@@ -314,6 +314,8 @@ typedef struct {
     unsigned                          ssl:1;
 #endif
     unsigned                          proxy_protocol:1;
+    time_t                            start_sec;
+    ngx_msec_t                        start_msec;
 } ngx_http_connection_t;
 
 
